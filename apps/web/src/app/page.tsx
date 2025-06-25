@@ -1,10 +1,35 @@
-import { placeholder } from "@bleu-builders/tech-challenge-ui";
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-export default function Home() {
+import { getNFTs } from '@/core/ssr/home/getNFTs';
+import { Home } from '@/presentation/views';
+import { cookies } from 'next/headers';
+import { createQueryClient } from '@/configs/request/queryClient';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function HomePage() {
+  const cookieStore = cookies();
+  const address = ((await cookieStore).get('wallet')?.value as `0x${string}`) ?? null;
+
+  const queryClient = createQueryClient();
+
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ['nfts', address],
+      queryFn: () => getNFTs({ address }),
+    });
+  } catch (error) {
+    queryClient.setQueryData(['nfts'], []);
+  }
+
+  const dehydratedState = dehydrate(queryClient);
+
+  queryClient.clear();
+
   return (
-    <div>
-      <h1>Hello World</h1>
-      <p>{placeholder ? "true" : "false"}</p>
-    </div>
+    <HydrationBoundary state={dehydratedState}>
+      <Home address={address} />
+    </HydrationBoundary>
   );
 }
