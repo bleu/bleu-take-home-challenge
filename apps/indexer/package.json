@@ -10,7 +10,7 @@
     "clean": "rm -rf .ponder node_modules"
   },
   "dependencies": {
-    "hono": "^4.5.0",
+    "hono": "^4.9.7",
     "ponder": "^0.9.5",
     "viem": "^2.21.3"
   },
